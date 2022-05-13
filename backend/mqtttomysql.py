@@ -1,13 +1,25 @@
+import logging
 import paho.mqtt.client as mqtt
 import pymysql
 import sys
 import json
+from rules import Rules
+
+
+Log_Format = "%(levelname)s %(asctime)s - %(message)s"
+logging.basicConfig(filename = "/var/log/mtms.log",
+                    filemode = "a",
+                    format = Log_Format, 
+                    level = logging.DEBUG)
+
+logger = logging.getLogger()
+
 
 # User variable for Gateway ID
 myGatewayID = "30:AE:A4:DA:3F:BC"
 
 #User variable for database name
-dbName = "office"
+dbName = "iot"
 
 # it is expected that this Database will already contain one table called sensors.  Create that table inside the Database with this command:
 # CREATE TABLE sensors(device_id char(23) NOT NULL, transmission_count INT NOT NULL, battery_level FLOAT NOT NULL, type INT NOT NULL, node_id INT NOT NULL, rssi INT NOT NULL, last_heard TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
@@ -16,19 +28,19 @@ dbName = "office"
 mqttBroker = "eu1.cloud.thethings.network"
 #mqttBroker = "localhost"
 mqttBrokerPort = 1883
-mqttUser = "0636fc66c7572d46@ttn"
+mqttUser = "devices-mgmt@ttn"
 #mqttUser = "mqtt"
-mqttPassword = "NNSXS.3XJ6NBSYKZX5QAW3ALURERA3B3DHQJOMJLICVFI.RIMC5WAV5KWBXHUFWPDGBDIJKWEFAE2RV5EMPJIPNIDIPQIJFQBQ"
+mqttPassword = "NNSXS.YXLSJKMPC2WDGUZMV4RUVBJDXX52M7SCE2U5R6Y.R4LTPDYQYBYT6IQXEE7YCRBCGHIU4WDWTLBMYY7CW5K43JCPSPGA"
 #mqttPassword = "vvXH2aRqr8"
 
 mysqlHost = "localhost"
-mysqlUser = "test"
-mysqlPassword = "test"
+mysqlUser = "iot"
+mysqlPassword = "bKocGy"
 
 # This callback function fires when the MQTT Broker conneciton is established.  At this point a connection to MySQL server will be attempted.
 def on_connect(client, userdata, flags, rc):
     print("MQTT Client Connected")
-    client.subscribe("#")
+    client.subscribe("v3/devices-mgmt@ttn/devices/#")
     try:
         db = pymysql.connect(host=mysqlHost, user=mysqlUser, password=mysqlPassword, db=dbName, charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
         db.close()
@@ -80,7 +92,7 @@ def log_telemetry(db, payload):
 
             # if table exists, but column doesn't
             columnExistsQuery = "select column_name from information_schema.columns where table_name = 'eui_%s' and column_name like '%s'" % (payload['end_device_ids']['dev_eui'], key)
-            print(columnExistsQuery)
+            logger.debug(columnExistsQuery)
             cursor.execute(columnExistsQuery)
             
             data = cursor.fetchone()
@@ -95,9 +107,9 @@ def log_telemetry(db, payload):
                     newColumn = key+" VARCHAR(50)"
 
                 addColumnRequest="alter table eui_%s add column %s" % (payload['end_device_ids']['dev_eui'], newColumn)
-                print(addColumnRequest)
+                #print(addColumnRequest)
                 cursor.execute(addColumnRequest)
-                print("Device %s: New column %s has been added to 'eui_%s' table" % (payload['end_device_ids']['device_id'], newColumn, payload['end_device_ids']['dev_eui']))
+                logger.info("Device %s: New column %s has been added to 'eui_%s' table" % (payload['end_device_ids']['device_id'], newColumn, payload['end_device_ids']['dev_eui']))
 
         # remove last comma from string
         logInsertRequest = logInsertRequest[:-1]
@@ -115,10 +127,10 @@ def log_telemetry(db, payload):
         logInsertRequest += ')'
         #print(logInsertRequest)
         cursor.execute(logInsertRequest)
-        print("Device " + payload['end_device_ids']['device_id'] + ": " + "Data has been inserted")
+        logger.info("Device " + payload['end_device_ids']['device_id'] + ": " + "Data has been inserted")
         db.commit()
     else:
-        print("Device " + payload['end_device_ids']['device_id'] + ": Payload is invalid or has not been decoded correctly")
+        logger.error("Device " + payload['end_device_ids']['device_id'] + ": Payload is invalid or has not been decoded correctly")
         
 
 
@@ -132,37 +144,48 @@ def sensor_update(db, payload):
     if(data[deviceQuery] >= 1):
         updateRequest = "UPDATE sensors SET rssi = %i, last_heard = CURRENT_TIMESTAMP WHERE device_id = '%s'" % (payload['uplink_message']['rx_metadata'][0]['rssi'], payload['end_device_ids']['device_id'])
         cursor.execute(updateRequest)
-        print("Device " + payload['end_device_ids']['device_id'] + ": " + "Transmission received")
+        logger.info("Device " + payload['end_device_ids']['device_id'] + ": " + "Transmission received")
         db.commit()
     else:
-        insertRequest = "INSERT INTO sensors(device_id, dev_eui, rssi, last_heard) VALUES('%s','%s', %i, CURRENT_TIMESTAMP)" % (payload['end_device_ids']['device_id'], payload['end_device_ids']['dev_eui'], payload['uplink_message']['rx_metadata'][0]['rssi'])
+        if 'battery' in payload['uplink_message']['decoded_payload']:
+            insertRequest = "INSERT INTO sensors(device_id, dev_eui, rssi, battery_level, last_heard) VALUES('%s','%s', %i, CURRENT_TIMESTAMP)" % (payload['end_device_ids']['device_id'], payload['end_device_ids']['dev_eui'], payload['uplink_message']['rx_metadata'][0]['rssi'], payload['uplink_message']['decoded_payload']['battery'])
+        else:
+            insertRequest = "INSERT INTO sensors(device_id, dev_eui, rssi, last_heard) VALUES('%s','%s', %i, CURRENT_TIMESTAMP)" % (payload['end_device_ids']['device_id'], payload['end_device_ids']['dev_eui'], payload['uplink_message']['rx_metadata'][0]['rssi'])
         cursor.execute(insertRequest)
-        print("Device " + payload['end_device_ids']['device_id'] + ": " + "Transmission received")
+        logger.info("Device " + payload['end_device_ids']['device_id'] + ": " + "Transmission received")
         db.commit()
+
 
 
 # The callback for when a PUBLISH message is received from the MQTT Broker.
 def on_message(client, userdata, msg):
     #print("Transmission received")
     payload = json.loads((msg.payload).decode("utf-8"))
-    print(payload)
+    logger.debug(payload)
     if 'end_device_ids' in payload and 'uplink_message' in payload:
-        if 'device_id' in payload['end_device_ids'] and 'rx_metadata' in payload['uplink_message']:
+        if 'device_id' in payload['end_device_ids'] and 'dev_eui' in payload['end_device_ids'] and 'rx_metadata' in payload['uplink_message'] and 'decoded_payload' in payload['uplink_message']:
             if payload['uplink_message']['rx_metadata']:
                 #print(payload['uplink_message']['rx_metadata'][0])
                 if 'rssi' in payload['uplink_message']['rx_metadata'][0]:
                     db = pymysql.connect(host="localhost", user=mysqlUser, password=mysqlPassword, db=dbName,charset='utf8mb4',cursorclass=pymysql.cursors.DictCursor)
                     sensor_update(db,payload)
                     log_telemetry(db,payload)
-                    
+                    Rules.trigger_uc1114(payload['end_device_ids']['dev_eui'], payload['uplink_message']['decoded_payload'])
+                    if(Rules.new_message):
+                        client.publish(Rules.MQTT_TOPIC,Rules.MQTT_MSG)                     
                     db.close()
 
+
+def on_publish(client, userdata, mid):
+    logger.info("Message Published...")
+    Rules.new_message=False
 
 
 # Connect the MQTT Client
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
+client.on_publish = on_publish
 client.username_pw_set(username=mqttUser, password=mqttPassword)
 try:
     client.connect(mqttBroker, mqttBrokerPort, 60)

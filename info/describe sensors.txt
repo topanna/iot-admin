@@ -1,0 +1,11 @@
+mysql> describe sensors;
++---------------+-----------+------+-----+-------------------+-----------------------------------------------+
+| Field         | Type      | Null | Key | Default           | Extra                                         |
++---------------+-----------+------+-----+-------------------+-----------------------------------------------+
+| device_id     | char(23)  | NO   |     | NULL              |                                               |
+| battery_level | float     | NO   |     | 0                 |                                               |
+| last_heard    | timestamp | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED on update CURRENT_TIMESTAMP |
+| dev_eui       | char(16)  | NO   |     | NULL              |                                               |
+| rssi          | int       | NO   |     | NULL              |                                               |
++---------------+-----------+------+-----+-------------------+-----------------------------------------------+
+5 rows in set (0.00 sec)

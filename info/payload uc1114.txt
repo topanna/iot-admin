@@ -1,0 +1,17 @@
+DO1 HIGH
+
+v3/0636fc66c7572d46@ttn/devices/uc1114/down/push
+
+{
+  "downlinks": [{
+    "f_port": 15,
+    "frm_payload": "CQEA/w==",
+    "priority": "NORMAL"
+  }]
+}
+
+DO1 LOW
+
+CQAA/w==
+
+

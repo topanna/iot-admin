@@ -24,13 +24,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <div class="wrapper">
 
     <!-- Navbar -->
+
     <?php include 'inc/navbar.php'; ?>
+
     <!-- /.navbar -->
 
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
-      <a href="index.php" class="brand-link">
+      <a href="#" class="brand-link">
         <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
         <span class="brand-text font-weight-light">IoT Admin</span>
       </a>
@@ -39,6 +41,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="sidebar">
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+
+
+
           <!-- Sidebar Menu -->
           <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -54,13 +59,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </a>
                 <ul class="nav nav-treeview">
                   <li class="nav-item">
-                    <a href="index.php" class="nav-link">
+                    <a href="#" class="nav-link active">
                       <i class="far fa-circle nav-icon"></i>
                       <p>Dashboard</p>
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="devices.php" class="nav-link">
                       <i class="far fa-circle nav-icon"></i>
                       <p>Devices</p>
                     </a>
@@ -88,12 +93,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="container-fluid">
           <div class="row mb-2">
             <div class="col-sm-6">
-              <h1 class="m-0">Devices</h1>
+              <h1 class="m-0">Dashboard</h1>
             </div><!-- /.col -->
             <div class="col-sm-6">
               <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item active">Devices</li>
+                <li class="breadcrumb-item active">Dashboard</li>
               </ol>
             </div><!-- /.col -->
           </div><!-- /.row -->
@@ -103,54 +108,47 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
       <!-- Main content -->
       <div class="content">
-
         <div class="container-fluid">
           <div class="row">
-            <div class="col-12">
-
-
+            <div class="col-lg-6">
               <div class="card">
-
+                <div class="card-header">
+                  <h3 class="card-title">Device status</h3>
+                </div>
                 <!-- /.card-header -->
                 <div class="card-body p-0">
-
                   <table class="table">
                     <thead>
                       <tr>
-                        <th>Name</th>
+                        <th>Device</th>
+                        <th>DevEUI</th>
                         <th>Last seen</th>
+                        <th style="width: 40px">Battery</th>
+                        <th style="width: 40px">RSSI</th>
                       </tr>
                     </thead>
                     <tbody>
                       <?php
-                      if ($connected):
-                        $deveuis = $conn->query("select * from sensors");
-                        if ($deveuis->num_rows) :
-                          // output data of each row
-                          while ($row = $deveuis->fetch_assoc()):
-                            $deveui[] = $row['dev_eui'];
-                          endwhile;
-                        endif;
-                        ?>
-                        <?php 
-                        for ($i = 0; $i < count($deveui); $i++):
-                          $devices = $conn->query("select * from eui_" . $deveui[$i] . " order by timestamp desc");
-                          if ($devices->num_rows):
-                            // output data of each row
-                            $row = $devices->fetch_assoc();
-                        ?>
-                            <tr>
-                              <td> <a class="nav-link" href="history.php?id=eui_<?php echo $deveui[$i]; ?>"> <?php echo $row['device_id']; ?> </a> </td>
-                              <td> <?php echo $row['timestamp'];  ?></td>
-                            </tr>
-                        <?php
-                          else:
-                            echo "0 results";
-                          endif;
-                        endfor;
-                        $conn->close();
-                      endif;
-                      ?>
+                      if ($connected) :
+                        $sql = "select * from sensors";
+                        $result = $conn->query($sql);
+                      endif; ?>
+                      
+                      <?php if ($result->num_rows) : ?>
+                        <?php while ($row = $result->fetch_assoc()) : ?>
+                          <tr>
+                            <td> <?php echo $row['device_id']; ?></td>
+                            <td> <?php echo $row['dev_eui']; ?></td>
+                            <td> <?php echo $row['last_heard']; ?></td>
+                            <td> <span class="badge bg-danger"> <?php echo $row['battery_level']; ?> %</span></td>
+                            <td> <?php echo $row['rssi']; ?> </td>
+                          </tr>
+                        <?php endwhile; ?>
+                      <?php else :
+                        echo "0 results";
+                      endif; ?>
+
+                      <?php $conn->close(); ?>
                     </tbody>
                   </table>
                 </div>
@@ -158,6 +156,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </div>
               <!-- /.card -->
             </div>
+            <!-- /.col-md-6 -->
+            <div class="col-lg-6">
+             
+            </div>
+            <!-- /.col-md-6 -->
           </div>
           <!-- /.row -->
         </div><!-- /.container-fluid -->
@@ -178,7 +181,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- /.control-sidebar -->
 
     <!-- Main Footer -->
+
     <?php include 'inc/footer.php'; ?>
+
     <!-- / Main Footer -->
 
   </div>

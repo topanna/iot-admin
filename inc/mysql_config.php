@@ -1,3 +1,5 @@
+<meta http-equiv="refresh" content="30" >
+
 <?php
 $url='127.0.0.1:3306';
 $username='test';
