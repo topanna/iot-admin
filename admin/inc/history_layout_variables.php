@@ -31,6 +31,24 @@ if ($connected) {
   $data = $conn->query("select * from " . $tablename . " order by timestamp desc");
   $totoalPages = ceil($data->num_rows / $limit);
   $one_page_data = $conn->query("select * from " . $tablename . " order by timestamp desc LIMIT $paginationStart, $limit");
-}
 
-?>
+  // superset range of pages
+  $superset_range = range(1, $totoalPages);
+  // subset cdrange of pages to display
+  $subset_range = range($page - 3, $page + 3);
+
+  // adjust the range(if required)
+  foreach ($subset_range as $p) {
+    if ($p < 1) {
+      array_shift($subset_range);
+      if (in_array($subset_range[count($subset_range) - 1] + 1, $superset_range)) {
+        $subset_range[] = $subset_range[count($subset_range) - 1] + 1;
+      }
+    } elseif ($p > $totoalPages) {
+      array_pop($subset_range);
+      if (in_array($subset_range[0] - 1, $superset_range)) {
+        array_unshift($subset_range, $subset_range[0] - 1);
+      }
+    }
+  }
+}

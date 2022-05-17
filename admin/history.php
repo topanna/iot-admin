@@ -104,7 +104,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <div class="col-12">
               <div class="card">
 
-              <?php include 'inc/history_layout_variables.php'; ?>
+                <?php include 'inc/history_layout_variables.php'; ?>
 
                 <div class="card-header">
                   <h3 class="card-title"> <strong> <?php echo strtoupper($devicename); ?> </strong></h3>
@@ -125,16 +125,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <?php endif; ?>
                     <!-- display one page output -->
                     <?php if ($one_page_data->num_rows) : ?>
-                      <?php while ($row = $one_page_data->fetch_array()): ?>
+                      <?php while ($row = $one_page_data->fetch_array()) : ?>
                         <tbody>
                           <tr>
-                            <?php for ($i = 0; $i < count($columns); $i++): ?>
+                            <?php for ($i = 0; $i < count($columns); $i++) : ?>
                               <td> <?php echo $row[$i]; ?> </td>
                             <?php endfor; ?>
                           </tr>
                         </tbody>
                       <?php endwhile; ?>
-                    <?php else:
+                    <?php else :
                       echo "0 results";
                     endif; ?>
                   </table>
@@ -154,13 +154,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                     echo "?id=" . $tablename . "&page=" . $prev;
                                                   } ?>">Previous</a>
                     </li>
-                    <?php for ($i = 1; $i <= $totoalPages; $i++) : ?>
-                      <li class="page-item <?php if ($page == $i) {
+                    <?php // display intermediate pagination links
+                    if ($subset_range[0] > $superset_range[0]) : ?>
+                      <li class="page-item disabled">
+                        <a class="page-link"> <?php echo " ...&nbsp;"; ?> </a>
+                      </li>
+                    <?php endif; ?>
+
+                    <?php foreach ($subset_range as $p) : ?>
+                      <li class="page-item <?php if ($page == $p) {
                                               echo 'active';
                                             } ?>">
-                        <a class="page-link" href="<?php echo "?id=" . $tablename . "&page=" . $i; ?>"> <?php echo $i; ?> </a>
+                        <a class="page-link" href="<?php echo "?id=" . $tablename . "&page=" . $p; ?>"> <?php echo $p; ?> </a>
                       </li>
-                    <?php endfor; ?>
+                    <?php endforeach; ?>
+
+                    <?php // display intermediate pagination links
+                    if ($subset_range[count($subset_range) - 1] < $superset_range[count($superset_range) - 1]) : ?>
+                      <li class="page-item disabled">
+                        <a class="page-link"> <?php echo " ...&nbsp;"; ?> </a>
+                      </li>
+                    <?php endif; ?>
+
                     <li class="page-item <?php if ($page >= $totoalPages) {
                                             echo 'disabled';
                                           } ?>">
@@ -185,16 +200,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
     </div>
     <!-- /.content-wrapper -->
 
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-      <!-- Control sidebar content goes here -->
-      <div class="p-3">
-        <h5>Title</h5>
-        <p>Sidebar content</p>
-      </div>
-    </aside>
-    <!-- /.control-sidebar -->
-
     <!-- Main Footer -->
     <?php include 'inc/footer.php'; ?>
     <!-- / Main Footer -->
@@ -204,12 +209,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- REQUIRED SCRIPTS -->
 
   <!-- jQuery -->
-  <script src="plugins/jquery/jquery.min.js"></script>
+  <script src="../bootstrap/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
-  <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../bootstrap/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- AdminLTE App -->
-  <script src="dist/js/adminlte.min.js"></script>
+  <script src="../bootstrap/dist/js/adminlte.min.js"></script>
   <!-- AdminLTE for demo purposes -->
 
 </body>
+
 </html>

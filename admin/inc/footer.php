@@ -1,5 +1,5 @@
 <footer class="main-footer">
-v0.2.1
+v0.3.1
   
     <div class="float-right d-none d-sm-inline-block">
       
