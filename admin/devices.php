@@ -8,7 +8,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Starter</title>
+  <title>IoT LoRaWAN</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -45,13 +45,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
               <li class="nav-item menu-open">
-                <a href="#" class="nav-link active">
-                  <i class="nav-icon fas fa-tachometer-alt"></i>
-                  <p>
-                    Starter Pages
-                    <i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
                 <ul class="nav nav-treeview">
                   <li class="nav-item">
                     <a href="index.php" class="nav-link">
@@ -123,19 +116,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </thead>
                     <tbody>
                       <?php
-                      if ($connected):
+                      if ($connected) :
                         $deveuis = $conn->query("select * from sensors");
                         if ($deveuis->num_rows) :
                           // output data of each row
-                          while ($row = $deveuis->fetch_assoc()):
+                          while ($row = $deveuis->fetch_assoc()) :
                             $deveui[] = $row['dev_eui'];
                           endwhile;
                         endif;
-                        ?>
-                        <?php 
-                        for ($i = 0; $i < count($deveui); $i++):
+                      ?>
+                        <?php
+                        for ($i = 0; $i < count($deveui); $i++) :
                           $devices = $conn->query("select * from eui_" . $deveui[$i] . " order by timestamp desc");
-                          if ($devices->num_rows):
+                          if ($devices->num_rows) :
                             // output data of each row
                             $row = $devices->fetch_assoc();
                         ?>
@@ -143,8 +136,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                               <td> <a class="nav-link" href="history.php?id=eui_<?php echo $deveui[$i]; ?>"> <?php echo $row['device_id']; ?> </a> </td>
                               <td> <?php echo $row['timestamp'];  ?></td>
                             </tr>
-                        <?php
-                          else:
+                      <?php
+                          else :
                             echo "0 results";
                           endif;
                         endfor;

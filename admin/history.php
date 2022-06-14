@@ -8,7 +8,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Starter</title>
+  <title>IoT LoRaWAN</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -44,13 +44,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
               <li class="nav-item menu-open">
-                <a href="#" class="nav-link active">
-                  <i class="nav-icon fas fa-tachometer-alt"></i>
-                  <p>
-                    Starter Pages
-                    <i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
+
                 <ul class="nav nav-treeview">
                   <li class="nav-item">
                     <a href="index.php" class="nav-link">
@@ -107,7 +101,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <?php include 'inc/history_layout_variables.php'; ?>
 
                 <div class="card-header">
-                  <h3 class="card-title"> <strong> <?php echo strtoupper($devicename); ?> </strong></h3>
+
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <?php echo strtoupper($devicename); ?>
+                  </button>
+                  <div class="dropdown-menu">
+                    <?php foreach (array_keys($devices_dict) as $table) : ?>
+                      <a class="dropdown-item" href=<?php echo "history.php?id=" . $table; ?>><?php echo strtoupper($devices_dict[$table]); ?></a>
+                    <?php endforeach; ?>
+                  </div>
+
                 </div>
                 <!-- /.card-header -->
                 <div class="card-body">
@@ -151,8 +154,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
                       <a class="page-link" href="<?php if ($page <= 1) {
                                                     echo '#';
                                                   } else {
+                                                    echo "?id=" . $tablename . "&page=1";
+                                                  } ?>">
+                        << </a>
+                    </li>
+                    <li class="page-item <?php if ($page <= 1) {
+                                            echo 'disabled';
+                                          } ?>">
+                      <a class="page-link" href="<?php if ($page <= 1) {
+                                                    echo '#';
+                                                  } else {
                                                     echo "?id=" . $tablename . "&page=" . $prev;
-                                                  } ?>">Previous</a>
+                                                  } ?>">
+                        < </a>
                     </li>
                     <?php // display intermediate pagination links
                     if ($subset_range[0] > $superset_range[0]) : ?>
@@ -183,7 +197,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                                     echo '#';
                                                   } else {
                                                     echo "?id=" . $tablename . "&page=" . $next;
-                                                  } ?>">Next</a>
+                                                  } ?>">></a>
+                    </li>
+                    <li class="page-item <?php if ($page >= $totoalPages) {
+                                            echo 'disabled';
+                                          } ?>">
+                      <a class="page-link" href="<?php if ($page >= $totoalPages) {
+                                                    echo '#';
+                                                  } else {
+                                                    echo "?id=" . $tablename . "&page=" . $totoalPages;
+                                                  } ?>">>></a>
                     </li>
                   </ul>
                 </nav>

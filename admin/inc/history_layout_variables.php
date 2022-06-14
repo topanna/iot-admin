@@ -5,16 +5,20 @@ if ($connected) {
 
   if ($tables->num_rows) {
     // output data of each row
-    while ($row = $tables->fetch_array()) {
-      $tablename_def[] = $row[0];
+    while ($tableeui = $tables->fetch_array()) {
+
+      $deviceid = $conn->query("select device_id from " . $tableeui[0] . " limit 1");
+      $devicename = isset($deviceid->num_rows) ?: 'Error';
+      $devicename = $deviceid->fetch_array();
+      $devices_dict[$tableeui[0]] = $devicename[0];
     }
   }
 
-  $tablename = isset($_GET['id']) ? $_GET['id'] : $tablename_def[0];
+  $tablename = isset($_GET['id']) ? $_GET['id'] : array_keys($devices_dict)[0];
 
   $deviceid = $conn->query("select device_id from " . $tablename . " limit 1");
 
-  $devicename = isset($deviceid->num_rows) ?: 'error';
+  $devicename = isset($deviceid->num_rows) ?: 'Error';
   $row = $deviceid->fetch_array();
   $devicename = $row[0];
 
