@@ -1,3 +1,2 @@
 Requirements: MySQL, Apache, Python3
 Run mqtttomysql.py as a service
-
