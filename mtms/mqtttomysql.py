@@ -86,7 +86,7 @@ def log_telemetry(db, payload):
 
             # if table exists, but column doesn't
             columnExistsQuery = "select column_name from information_schema.columns where table_name = 'eui_%s' and column_name like '%s'" % (payload['end_device_ids']['dev_eui'], key)
-            logger.debug(columnExistsQuery)
+            #logger.debug(columnExistsQuery)
             cursor.execute(columnExistsQuery)
             
             data = cursor.fetchone()
@@ -158,7 +158,7 @@ def sensor_update(db, payload):
 def on_message(client, userdata, msg):
     #print("Transmission received")
     payload = json.loads((msg.payload).decode("utf-8"))
-    logger.debug(payload)
+    #logger.debug(payload)
     if 'end_device_ids' in payload and 'uplink_message' in payload:
         if 'device_id' in payload['end_device_ids'] and 'dev_eui' in payload['end_device_ids'] and 'rx_metadata' in payload['uplink_message'] and 'decoded_payload' in payload['uplink_message']:
             if payload['uplink_message']['rx_metadata']:
@@ -167,7 +167,6 @@ def on_message(client, userdata, msg):
                     db = pymysql.connect(host="localhost", user=mysqlUser, password=mysqlPassword, db=dbName,charset='utf8mb4',cursorclass=pymysql.cursors.DictCursor)
                     sensor_update(db,payload)
                     log_telemetry(db,payload)
-                    Rules.am307_trigger_uc1114(payload['end_device_ids']['dev_eui'], payload['uplink_message']['decoded_payload'])
                     Rules.placepod_trigger_uc1114(payload['end_device_ids']['dev_eui'], payload['uplink_message']['decoded_payload'])
                     if(Rules.new_message):
                         client.publish(Rules.MQTT_TOPIC,Rules.MQTT_MSG)                     
